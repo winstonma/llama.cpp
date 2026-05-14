@@ -300,3 +300,7 @@ if (TARGET gguf-model-data)
     target_link_libraries(export-graph-ops PRIVATE gguf-model-data)
     target_compile_definitions(export-graph-ops PRIVATE LLAMA_HF_FETCH)
 endif()
+
+llama_build(bench-vk-set-tensor.cpp)
+target_include_directories(bench-vk-set-tensor PRIVATE ${PROJECT_SOURCE_DIR}/ggml/src)
+

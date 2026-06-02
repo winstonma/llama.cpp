@@ -7119,17 +7119,11 @@ static vk_subbuffer ggml_vk_tensor_subbuffer(
     vk_buffer buffer = nullptr;
     size_t offset = 0;
 
-    // 1. Establish a safe check for direct host buffer tracking
-    bool is_host_buffer = tensor->buffer && tensor->buffer->buft == ggml_backend_vk_host_buffer_type();
-
-    // 2. Authoritatively override using the source tensor if this is a sub-tensor view
-    if (tensor->view_src) {
-        is_host_buffer = tensor->view_src->buffer && tensor->view_src->buffer->buft == ggml_backend_vk_host_buffer_type();
-    }
-
-    // 3. Only attempt pointer lookups if the target memory belongs to the Vulkan host pool
-    if (ctx->device->uma && is_host_buffer) {
-        ggml_vk_host_get(ctx->device, tensor->data, buffer, offset);
+    if (ctx->device->uma) {
+        const ggml_tensor * host_src = tensor->view_src ? tensor->view_src : tensor;
+        if (host_src->buffer && host_src->buffer->buft == ggml_backend_vk_host_buffer_type()) {
+            ggml_vk_host_get(ctx->device, tensor->data, buffer, offset);
+        }
     }
     if (!buffer) {
         auto buf_ctx = (ggml_backend_vk_buffer_context *)tensor->buffer->context;
